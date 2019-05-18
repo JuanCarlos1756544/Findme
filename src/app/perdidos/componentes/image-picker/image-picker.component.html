@@ -1,0 +1,28 @@
+<div class="picker">
+  <!-- 
+  <ion-img
+    role="button"
+    class="image"
+    (click)="onPickImage()"
+    [src]="selectedImage"
+    *ngIf="selectedImage && showPreview"
+  ></ion-img>
+  -->
+  <div class="contenedor-imagen" *ngIf="selectedImage && showPreview">
+      <img src="{{selectedImage}}"  (click)="onPickImage()" class="image">
+  </div>
+  
+  <ion-button color="primary" (click)="onPickImage()" *ngIf="!selectedImage || !showPreview">
+    <ion-icon name="camera" slot="start"></ion-icon>
+    <ion-label>Subir foto</ion-label>
+  </ion-button>
+  
+</div> 
+<!-- Solo para desktop -->
+<input
+  type="file"
+  accept="image/jpeg"
+  *ngIf="usePicker"
+  #filePicker
+  (change)="onFileChosen($event)"
+/>
