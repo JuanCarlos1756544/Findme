@@ -37,11 +37,9 @@ export class PerrosPerdidosService implements AfterViewInit {
   public googleMaps: any;
 
   constructor(private http: HttpClient) {
-    
    }
 
    ngAfterViewInit(){
-     
    }
 
   agregarAnuncio(anuncio: Anuncio) {
@@ -57,22 +55,29 @@ export class PerrosPerdidosService implements AfterViewInit {
           console.log('Mi centro', this.centro);
     });
     return this.http.get('https://findme-proyecto-9d68a.firebaseio.com/anuncios.json').pipe(map(resData => {
-      const perrosPerdidos: Array<any> =  [];
+      const perros: Array<any> =  [];
       for (const key in resData) {
         if (resData.hasOwnProperty(key)) {
-          perrosPerdidos.push({
+          perros.push({
             key,
             nombrePerro: resData[key].nombrePerro,
             raza: resData[key].raza,
             descripcion: resData[key].descripcion,
             fechaPerdido: new Date(resData[key].fechaPerdido),
+            duenoId: resData[key].duenoId,
+            perdido: resData[key].perdido,
             image: resData[key].image,
-            likes: resData[key].Likes,
-            location: resData[key].location
+            location: resData[key].location,
+            likes: resData[key].likes
           });
         }
       }
+      console.log('Perros todos', perros);
+      // Solo perros encontrados
+      const perrosPerdidos = perros.filter(perro => perro.perdido === true);
+      console.log('Perros Perdidos, filter', perrosPerdidos);
       if (filtroValue === 'all') {
+        this.todosPerrosPerdidos = perrosPerdidos;
         return perrosPerdidos;
       } else  {
         const perrosFiltrados = [];
@@ -85,20 +90,18 @@ export class PerrosPerdidosService implements AfterViewInit {
               const marcador = new googleMaps.LatLng(position.lat, position.lng);
               const centroLatLng = new this.googleMaps.LatLng(this.centro.lat, this.centro.lng);
               const distanciaEnKm = this.googleMaps.geometry.spherical.computeDistanceBetween(marcador, centroLatLng) / 1000;
-              //console.log(distanciaEnKm);
-              if (distanciaEnKm <= parseFloat(filtroValue)) { // En realidad es 5, solo por pruebas está en 150
-                //console.log('Si cumple <=');
+              if (distanciaEnKm <= parseFloat(filtroValue)) { 
                 aDistancia = true;
               }
             });
             if (aDistancia) {
-              //console.log('Si hubo true');
               perrosFiltrados.push(anuncio);
               console.log(perrosFiltrados);
             }
           });
         }); // Fin getGoogleMaps
         console.log(`Perros filtrados ${filtroValue} km`, perrosFiltrados);
+        this.todosPerrosPerdidos = perrosFiltrados;
         return perrosFiltrados;
       }
     })
@@ -111,25 +114,68 @@ export class PerrosPerdidosService implements AfterViewInit {
   }
 
   obtenerAnuncio(key: string) {
-    let perro: any;
+    let anuncios: any[] = [];
+    console.log('this.todosPerrosPerdidos', this.todosPerrosPerdidos);
     this.todosPerrosPerdidos.forEach(el => {
-      if(el.key === key){
+      if(el.duenoId === key){
         console.log('encontrado');
+        anuncios.push(el);
+      }
+    });
+    return anuncios;
+  }
+
+  obtenerPerro(key: string) {
+    let perro = null;
+    console.log('todosPerrosPerdidos Obtener Perro', this.todosPerrosPerdidos);
+    console.log('key perro a obtener', key);
+    this.todosPerrosPerdidos.forEach(el => {
+      if (key === el.key) {
         perro = el;
       }
     });
     return perro;
   }
 
-  uploadImage(image: string) {
-    const imageFile = base64toBlob(image.replace('data:image/jpeg;base64,', ''), 'image/jpeg');
-    console.log('SERVICIO uploadImage'); 
-    console.log(typeof imageFile); // No se convirtió en File
-    /* Retornará un observable, url es una url que podemos agarrar de donde sea, y path es la imagen local desde el backend*/
-    return this.http.post(
-      'https://us-central1-findme-proyecto-9d68a.cloudfunctions.net/storeImage',
-      imageFile
-    );
+  borrarAnuncio(key: string) {
+    console.log('key del perro a borrar', key);
+    const string = `https://findme-proyecto-9d68a.firebaseio.com/anuncios/${key}.json`;
+    console.log('string del delete, completo', string)
+    return this.http.delete(`https://findme-proyecto-9d68a.firebaseio.com/anuncios/${key}.json`);
+  }
+
+  updateEstadoAnuncio(id: any, anuncio: Anuncio) {
+    anuncio.perdido = false;
+    console.log('anuncio', anuncio);
+    return this.http.put(`https://findme-proyecto-9d68a.firebaseio.com/anuncios/${id}.json`, anuncio);
+  }
+
+  updateLikes(id: string, likesObj: any){
+    return this.http.put(`https://findme-proyecto-9d68a.firebaseio.com/anuncios/${id}/likes.json`, likesObj);
+  }
+
+  uploadImage(image: string | File) {
+    console.log('En uploadImage');
+    if (typeof image === 'string') {
+      console.log('Tipo de dato string');
+      const imageFile = base64toBlob(image.replace('data:image/jpeg;base64,', ''), 'image/jpeg');
+      console.log('SERVICIO uploadImage'); 
+      console.log(typeof imageFile); // No se convirtió en File
+      /* Retornará un observable, url es una url que podemos agarrar de donde sea, y path es la imagen local desde el backend*/
+      return this.http.post(
+        'https://us-central1-findme-proyecto-9d68a.cloudfunctions.net/storeImage',
+        imageFile
+      );
+    } else {
+      console.log('Tipo de dato file');
+      const uploadData = new FormData();
+      uploadData.append('image', image);
+      /* Retornará un observable, url es una url que podemos agarrar de donde sea, y path es la imagen local desde el backend*/
+      return this.http.post<{imageUrl: string, imagePath: string}>(
+        'https://us-central1-findme-proyecto-9d68a.cloudfunctions.net/storeImage',
+        uploadData
+      );
+    }
   }
 
   private getGoogleMaps(): Promise<any> {
@@ -155,9 +201,6 @@ export class PerrosPerdidosService implements AfterViewInit {
         }
       };
     })
-  }
-  updateLikes(id:any,anuncio:any){
-    return this.http.put(`https://findme-proyecto-9d68a.firebaseio.com/anuncios.json/${id}`,anuncio)
   }
 
 }

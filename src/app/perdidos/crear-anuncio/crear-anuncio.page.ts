@@ -1,10 +1,12 @@
+import { AuthService } from './../../servicios/auth.service';
 import { PerrosPerdidosService } from './../../servicios/perros-perdidos.service';
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { LoadingController } from '@ionic/angular';
+import { LoadingController, NavController } from '@ionic/angular';
 import { Anuncio } from './anuncio.model';
 import { switchMap } from 'rxjs/operators';
+import { Likes } from '../componentes/likes.model';
 
 
 function base64toBlob(base64Data, contentType) {
@@ -37,10 +39,13 @@ export class CrearAnuncioPage implements OnInit {
 
   form: FormGroup;
   checkValidado = false;
+  usuarioActual: any = null;
 
   constructor(private router: Router,
               private loadingCtrl: LoadingController,
-              private servicioPerdidos: PerrosPerdidosService) { }
+              private servicioPerdidos: PerrosPerdidosService,
+              private authService: AuthService,
+              private navCtrl: NavController) { }
 
   ngOnInit() {
     this.form = new FormGroup({
@@ -62,6 +67,13 @@ export class CrearAnuncioPage implements OnInit {
       }),
       location: new FormControl(null, {validators: [Validators.required]}),
       image: new FormControl(null)
+    });
+    this.obtenerUsuarioActual();
+  }
+
+  obtenerUsuarioActual() {
+    this.authService.getActualUser().then(userActual => {
+      this.usuarioActual = userActual;
     });
   }
 
@@ -86,23 +98,67 @@ export class CrearAnuncioPage implements OnInit {
     this.loadingCtrl.create({message: 'Creando anuncio...'})
     .then(loadingEl => {
       loadingEl.present();
-      this.servicioPerdidos.uploadImage(this.form.get('image').value);
-      console.log('Agregando anuncio...');
-      const anuncio: Anuncio = new Anuncio(
-            this.form.controls.nombrePerro.value,
-            this.form.controls.raza.value,
-            this.form.controls.descripcion.value,
-            this.form.controls.fechaPerdido.value,
-            this.form.get('location').value,
-            0,
-            this.form.get('image').value
-      );
-      this.servicioPerdidos.agregarAnuncio(anuncio).subscribe(() => {
-        loadingEl.dismiss();
-        this.form.reset();
-        this.router.navigateByUrl('/dashboard-perdido');
+      console.log('image value', this.form.get('image').value);
+      if (typeof this.form.get('image').value !== 'string') {
+        console.log('NO ES UN STRING');
+        this.servicioPerdidos.uploadImage(this.form.get('image').value).pipe(switchMap(uploadRes => {
+          console.log('Agregando anuncio...');
+          console.log(uploadRes);
+          const usersArray: Array<any> = [];
+          usersArray.push(this.usuarioActual.key);
+          const likesObj: Likes = {
+            number: 1,
+            users: usersArray
+          };
+          console.log('likesObj', likesObj);
+          const anuncioASubir: Anuncio = new Anuncio(
+                this.form.controls.nombrePerro.value,
+                this.form.controls.raza.value,
+                this.form.controls.descripcion.value,
+                this.form.controls.fechaPerdido.value,
+                true,
+                this.usuarioActual.key,
+                this.form.get('location').value,
+                likesObj,
+                (uploadRes as any).imageUrl
+             );
+          console.log('anuncio', anuncioASubir);
+          return this.servicioPerdidos.agregarAnuncio(anuncioASubir);
+        })).subscribe(() => {
+          loadingEl.dismiss();
+          this.form.reset();
+          this.router.navigateByUrl('/dashboard-perdido');
         });
-      });
+      } else {
+        this.servicioPerdidos.uploadImage(this.form.get('image').value);
+        console.log('Agregando anuncio...');
+        const usersArray: Array<any> = [];
+        usersArray.push(this.usuarioActual.key);
+        const likesObj: Likes = {
+          number: 1,
+          users: usersArray
+        };
+        console.log('likesObj', likesObj);
+        const anuncio: Anuncio = new Anuncio(
+              this.form.controls.nombrePerro.value,
+              this.form.controls.raza.value,
+              this.form.controls.descripcion.value,
+               this.form.controls.fechaPerdido.value,
+               true,
+               this.usuarioActual.key,
+              this.form.get('location').value,
+              likesObj,
+              this.form.get('image').value
+          );
+        console.log('anuncio', anuncio);
+        this.servicioPerdidos.agregarAnuncio(anuncio).subscribe(() => {
+            loadingEl.dismiss();
+            this.form.reset();
+            this.navCtrl.navigateBack('/dashboard-perdido');
+            // this.router.navigateByUrl('/dashboard-perdido');
+        });
+      }
+    });
   }
 
 }

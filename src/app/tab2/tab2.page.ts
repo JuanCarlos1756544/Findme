@@ -1,36 +1,42 @@
-import { PerrosPerdidosService } from '../servicios/perros-perdidos.service';
-import { Component } from '@angular/core';
-import { DetalleEncontradoComponent } from '../encontrados/detalle-encontrado/detalle-encontrado.component';
+import { ActivatedRoute } from '@angular/router';
+import { DetalleEncontradoComponent } from './../encontrados/detalle-encontrado/detalle-encontrado.component';
 import { ModalController } from '@ionic/angular';
-import { SocialSharing } from '@ionic-native/social-sharing/ngx';
-import { Anuncio } from '../perdidos/crear-anuncio/anuncio.model';
+import { Component } from '@angular/core';
+import { PerrosEncontradosService } from '../servicios/perros-encontrados.service';
+
 @Component({
   selector: 'app-tab2',
   templateUrl: 'tab2.page.html',
   styleUrls: ['tab2.page.scss']
 })
 export class Tab2Page {
+
   selectKm: any = 'all';
   filtro = false;
   listaPerros: any;
   listaLista = false;
-  constructor(private perrosPerdidosServicio: PerrosPerdidosService,
-    public modal:ModalController,private socialSharing: SocialSharing) {}
+  constructor(private perrosEncontradosServicio: PerrosEncontradosService,
+              public modal: ModalController, private route: ActivatedRoute) {
+                this.route.params.subscribe((data) => {
+                  console.log('CONSTRUCTOR');
+                  this.obtenerAnuncios();
+                });
+              }
 
 // tslint:disable-next-line: use-life-cycle-interface
   ngOnInit() {
-    this.obtenerAnuncios();
+    console.log('ngOnInit');
   }
 
   obtenerAnuncios() {
-    let filtroValue = this.selectKm;
-    this.perrosPerdidosServicio.obtenerAnuncios(filtroValue).subscribe(datos => {
+    const filtroValue = this.selectKm;
+    this.perrosEncontradosServicio.obtenerAnuncios(filtroValue).subscribe(datos => {
       console.log('Datos traidos del servicio', datos);
-      this.perrosPerdidosServicio.todosPerrosPerdidos = datos;
-      console.log(this.perrosPerdidosServicio.todosPerrosPerdidos);
+      this.perrosEncontradosServicio.todosPerrosEncontrados = datos;
+      console.log(this.perrosEncontradosServicio.todosPerrosEncontrados);
 
       // segun el filtro
-      this.listaPerros = this.perrosPerdidosServicio.todosPerrosPerdidos;
+      this.listaPerros = this.perrosEncontradosServicio.todosPerrosEncontrados;
       console.log('MI LISTA DE PERROS', this.listaPerros);
       console.log('Ubicacion del primer perro', this.listaLista[0]);
     }, error => {
@@ -42,7 +48,7 @@ export class Tab2Page {
   }
 
   obtenerAnuncio(key: string) {
-    const perro = this.perrosPerdidosServicio.obtenerAnuncio(key);
+    const perro = this.perrosEncontradosServicio.obtenerAnuncio(key);
     console.log(perro);
   }
 
@@ -56,39 +62,48 @@ export class Tab2Page {
     if (day.length < 2) {
       day = '0' + day;
     }
-    return `${day}/${month}/${year}`;
+    switch(month){
+      case "01":month="Enero";break;
+      case "02":month="Febrero";break;
+      case "03":month="Marzo" ;break;
+      case "04":month="Abril";break;
+      case "05":month="Mayo";break;
+      case "06":month="Junio";break;
+      case "07":month="Julio";break;
+      case "08":month="Agosto";break;
+      case "09":month="Septiembre";break;
+      case "10":month="Octubre";break;
+      case "11":month="Noviembre";break;
+      case "12":month="Diciembre";break;
+    }
+    return `${day}-${month}-${year}`;
   }
 
   onFiltrar() {
     if(this.filtro === false) {
       this.filtro = true;
-    }else{
+    } else {
       this.filtro = false;
     }
   }
-OpenDetalle(perro){
-  this.modal.create({
-    component:DetalleEncontradoComponent,
-    componentProps:{
-      perro:perro
-    }
 
-  }).then((modal)=>modal.present())
+  openDetalle(perro){
+    this.modal.create({
+      component: DetalleEncontradoComponent,
+      componentProps: {
+        perro
+      }
 
-}
-  Compartir(){
-    // Check if sharing via email is supported
-this.socialSharing.canShareViaEmail().then(() => {
-  // Sharing via email is possible
-}).catch(() => {
-  // Sharing via email is not possible
-});
+    }).then((modal) => modal.present());
 
-// Share via email
-this.socialSharing.shareViaEmail('Body', 'Subject', ['recipient@example.org']).then(() => {
-  // Success!
-}).catch(() => {
-  // Error!
-});
   }
+
+  updateLikes(perro) {
+
+  }
+
+  compartir() {
+
+  }
+
 }

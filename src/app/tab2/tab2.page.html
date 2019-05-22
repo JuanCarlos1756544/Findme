@@ -1,32 +1,88 @@
 <ion-header>
-  <ion-toolbar color="primary">
-    <ion-title>
-      findme
-    </ion-title>
-  </ion-toolbar>
-</ion-header>
+    <ion-toolbar color="primary">
+        <ion-title text-center>
+            <ion-grid no-padding>
+              <ion-row>
+                <ion-col text-start no-padding>
+                  <img class="findme-letras" src="assets/imagenes/findmeContornoRojo.jpg">
+                  <img class="logo" src="assets/imagenes/logo.jpg">
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </ion-title>
+      <ion-buttons slot="primary">
+        <ion-icon padding color="dark" name="contact" routerLink="/perfil" class="icono-usuario"></ion-icon>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
 
 <ion-content>
+    
+    <ion-grid>
+        <ion-row class="ion-align-items-center row-casa" padding>
+          <ion-col text-center><h3>Ya regresamos a casa 🤗🐶</h3></ion-col>
+        </ion-row>
+      </ion-grid>
+    <ion-grid>
+          <ion-row class="ion-align-items-center" padding class="row-cerca-de-ti">
+            <ion-col size="9"><h3>Cerca de ti </h3></ion-col>
+            <ion-col size="3">
+                <ion-button color="secondary" (click)="onFiltrar()"><ion-text color="light">Filtro</ion-text></ion-button>
+            </ion-col>
+          </ion-row>
+    </ion-grid>
+    <div *ngIf="filtro" class="ion-text-end" padding>
+        <ion-item >
+          <ion-label>Kilometros</ion-label>
+          <ion-select value="all" okText="Okay" cancelText="Cancelar" [(ngModel)]="selectKm">
+              <ion-select-option value="all">Sin filtro</ion-select-option>
+            <ion-select-option value="5">5</ion-select-option>
+            <ion-select-option value="10">10</ion-select-option>
+            <ion-select-option value="15">15</ion-select-option>
+            <ion-select-option value="20">20</ion-select-option>
+            <ion-select-option value="25">25</ion-select-option>
+            <ion-select-option value="30">30</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-button (click)="obtenerAnuncios()" class="ion-margin-top ion-margin-right">Aplicar</ion-button>
+      </div>
     <ion-list>
       <ion-item *ngFor="let perro of listaPerros">
         <ion-card>
-          <ion-card-header>
+          <ion-card-header color="danger">
             <ion-card-title>{{perro.nombrePerro}}</ion-card-title>
             <ion-card-subtitle>{{perro.raza}}</ion-card-subtitle>
           </ion-card-header>
           <img class="imagen" [src]="perro.image">
-          <ion-card-content>
-            <ion-text text-size-adjust:20px >{{perro.likes}}</ion-text>
-            <ion-button (click)="updateLikes(perro)" color="primary"><ion-icon name="thumbs-up"></ion-icon></ion-button>
-            <ion-button (click)="OpenDetalle(perro)" color="primary" >Ver detalles</ion-button>
-            <ion-button (click)="Compartir()" color="primary"><ion-icon name="share"></ion-icon></ion-button>
+          <ion-card-content text-end>
+            <ion-button (click)="openDetalle(perro)" color="primary" ><ion-text>Ver detalles</ion-text></ion-button>
+            
+            <ion-button color="light">
+              <ion-text color="danger">{{perro.likes.number}}</ion-text>
+              <ion-icon color="danger" name="heart"></ion-icon>
+            </ion-button>
+            <ion-button (click)="compartir()" color="primary"><ion-icon name="share"></ion-icon></ion-button>
           </ion-card-content>
-          
-          <ion-card-content>
-            {{perro.descripcion}}
-          </ion-card-content>
-          <ion-text>Se perdió el: {{ formatoFecha(perro.fechaPerdido) }}</ion-text>
+          <h5 padding>Recuperado el: {{ formatoFecha(perro.fechaPerdido) }}</h5>
         </ion-card>
       </ion-item>
     </ion-list>
+
+    <ion-item>
+        <ion-card>
+            <ion-card-header>
+              <img src="assets/imagenes/husky.gif" alt="" class="imagen">
+            </ion-card-header>
+            <ion-card-content>
+                <ion-card-title>¿Algo no funciona bien o te gustaria <br>añadirle algo a la app?</ion-card-title>
+                <ion-card-subtitle>Dejanos tus comentarios</ion-card-subtitle>
+            </ion-card-content>
+          </ion-card>
+    </ion-item>
+    
 </ion-content>
+
+<ion-footer>
+  
+</ion-footer>
+

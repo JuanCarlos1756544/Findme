@@ -1,0 +1,36 @@
+<ion-header>
+
+  <ion-toolbar color="secondary">
+    <ion-button slot="start" fill="clear" (click)="closeDetalle()" color="light"><ion-icon name="close"></ion-icon></ion-button>
+  <ion-title color="light">Mas sobre mi  📃 </ion-title>
+  </ion-toolbar>
+  </ion-header>
+  <ion-content>
+      <ion-item class="ion-margin-top">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Nombre: {{perro.nombrePerro}}</ion-card-title>
+            <ion-card-subtitle>Raza: {{perro.raza}}</ion-card-subtitle>
+            <ion-card-subtitle>{{perro.descripcion}}</ion-card-subtitle>
+          </ion-card-header>
+          <img class="imagen " [src]="perro.image">
+          <h4 padding>Me perdi el: {{ formatoFecha(perro.fechaPerdido) }}</h4>
+          <ion-card-content no-padding>
+              <h2 padding>Puedo andar por aqui:</h2>
+            <img class="imagen imagen-mapa" [src]="perro.location.imagen">
+          </ion-card-content>
+        </ion-card>
+      </ion-item>
+      <ion-item *ngIf="dueno">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Datos de mi dueño</ion-card-title>
+              <ion-card-subtitle>Nombre: {{dueno ? dueno.nombreUsuario : 'Indefinido'}}</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+                <p>Email: {{dueno ? dueno.email : 'indefinido@gmail.com'}}</p>
+                <p>Telefono: {{dueno ? dueno.telefono : 'Sin numero'}}</p>
+            </ion-card-content>
+          </ion-card>
+        </ion-item>
+  </ion-content>

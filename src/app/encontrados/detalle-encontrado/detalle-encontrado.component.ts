@@ -1,6 +1,7 @@
+import { Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
-import {NavParams,ModalController}from "@ionic/angular";
-import{Anuncio }from '../../perdidos/crear-anuncio/anuncio.model'
+import {NavParams, ModalController} from '@ionic/angular';
+
 @Component({
   selector: 'app-detalle-encontrado',
   templateUrl: './detalle-encontrado.component.html',
@@ -8,14 +9,21 @@ import{Anuncio }from '../../perdidos/crear-anuncio/anuncio.model'
 })
 export class DetalleEncontradoComponent implements OnInit {
 
-  public perro:Anuncio;
-  constructor(private params:NavParams,private modal:ModalController) { }
+  public perro: any;
+  constructor(private params: NavParams, private modal: ModalController, private router: Router) { }
 
   ngOnInit() {
-    this.perro=this.params.get('perro');
+    this.perro = this.params.get('perro');
 
   }
-  closeDetalle(){
+
+  closeDetalle() {
+    this.modal.dismiss();
+  }
+
+  verPerrosPerdidos() {
+    
+    this.router.navigateByUrl('/dashboard-perdido');
     this.modal.dismiss();
   }
 

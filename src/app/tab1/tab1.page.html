@@ -1,24 +1,57 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title>
-      findme
-    </ion-title>
+      <ion-title text-center>
+          <ion-grid no-padding>
+            <ion-row>
+              <ion-col text-start no-padding>
+                <img class="findme-letras" src="assets/imagenes/findmeContornoRojo.jpg">
+                <img class="logo" src="assets/imagenes/logo.jpg">
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </ion-title>
     <ion-buttons slot="primary">
-      <ion-back-button defaultHref="/crear-anuncio" color="secondary"></ion-back-button>
+      <ion-icon padding color="dark" name="contact" routerLink="/perfil" class="icono-usuario"></ion-icon>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
+
+    <ion-grid *ngIf="siHayEncontrados" padding class="ion-margin-top siHayEncontradosResguardados" >
+        <ion-row>
+          <ion-col><h2 text-center>¡¡Alguien vio a tu perro!!</h2></ion-col>
+        </ion-row>
+        <ion-row text-center>
+            <ion-col class="boton-publicar"><ion-button fill="outline" color="primary" (click)="getEstadoMisAnuncios()">Ver mensaje</ion-button></ion-col>
+        </ion-row>
+      </ion-grid>
+
+      <ion-grid *ngIf="siHayResguardados" padding class="ion-margin-top siHayEncontradosResguardados" >
+          <ion-row>
+            <ion-col><h2 text-center>¡¡Alguien tiene a tu perro!!</h2></ion-col>
+          </ion-row>
+          <ion-row text-center>
+              <ion-col class="boton-publicar"><ion-button fill="outline" color="primary" (click)="getEstadoMisAnunciosResguardados()">Ver mensaje</ion-button></ion-col>
+          </ion-row>
+        </ion-grid>
+
+  <ion-grid padding class="ion-justify-content-between">
+    <ion-row>
+      <ion-col size="8"><h2>Perdi a mi perro 😭</h2></ion-col>
+      <ion-col size="4" class="boton-publicar"><ion-button color="danger" routerLink="/crear-anuncio">Publicar <br> anuncio</ion-button></ion-col>
+    </ion-row>
+  </ion-grid>
+
   <ion-grid>
-    <ion-row class="ion-align-items-center">
-      <ion-col size="9"><h3>Cerca de ti</h3></ion-col>
+    <ion-row class="ion-align-items-center" padding>
+      <ion-col size="9"><h3>Cerca de ti 🐕</h3></ion-col>
       <ion-col size="3">
-          <ion-button color="secondary" (click)="onFiltrar()">Filtro</ion-button>
+          <ion-button color="secondary" (click)="onFiltrar()"><ion-text color="light">Filtro</ion-text></ion-button>
       </ion-col>
     </ion-row>
   </ion-grid>
-    <div *ngIf="filtro" class="ion-text-end">
+    <div *ngIf="filtro" class="ion-text-end" padding>
       <ion-item >
         <ion-label>Kilometros</ion-label>
         <ion-select value="all" okText="Okay" cancelText="Cancelar" [(ngModel)]="selectKm">
@@ -27,7 +60,8 @@
           <ion-select-option value="10">10</ion-select-option>
           <ion-select-option value="15">15</ion-select-option>
           <ion-select-option value="20">20</ion-select-option>
-          <ion-select-option value="20">20</ion-select-option>
+          <ion-select-option value="25">25</ion-select-option>
+          <ion-select-option value="30">30</ion-select-option>
         </ion-select>
       </ion-item>
       <ion-button (click)="obtenerAnuncios()" class="ion-margin-top ion-margin-right">Aplicar</ion-button>
@@ -38,20 +72,23 @@
         <ion-card>
           <ion-card-header>
             <ion-card-title>{{perro.nombrePerro}}</ion-card-title>
-            <ion-card-subtitle>{{perro.raza}}</ion-card-subtitle>
+            <ion-card-subtitle>Raza: {{perro.raza}}</ion-card-subtitle>
           </ion-card-header>
           <img class="imagen" [src]="perro.image">
-          <ion-card-content>
-            <ion-button Href="/formulario-encontrado" >Lo encontre!<ion-icon name="pin"></ion-icon></ion-button>
-            <ion-button (click)="OpenDetalle(perro)" color="primary" >Ver detalles</ion-button>
-            <ion-button (click)="Compartir()"><ion-icon name="share"></ion-icon></ion-button>
+          <ion-card-content text-end>
+            <ion-button (click)="onLoEncontre(perro)" color="danger">¡Lo encontre!<ion-icon name="pin"></ion-icon></ion-button>
+            <ion-button (click)="openDetalle(perro)" color="primary">detalles</ion-button>
+            <ion-button (click)="updateLikes($event, perro, perro.key, perro.likes.users)">
+              {{perro.likes.number}}
+              <ion-icon *ngIf="alreadyLiked(perro.likes.users)" color="danger" name="heart"></ion-icon>
+              <ion-icon *ngIf="!alreadyLiked(perro.likes.users)" color="dark" name="heart"></ion-icon>
+            </ion-button>
+            <ion-button (click)="compartir()"><ion-icon name="share" color="dark"></ion-icon></ion-button>
           </ion-card-content>
-          
           <ion-card-content>
             {{perro.descripcion}}
           </ion-card-content>
-          <ion-text>Se perdió el: {{ formatoFecha(perro.fechaPerdido) }}</ion-text>
-          
+          <h5 padding>Se perdió el: {{ formatoFecha(perro.fechaPerdido) }}</h5> 
         </ion-card>
       </ion-item>
     </ion-list>
